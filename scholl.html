@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Result Analysis Tool</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+      font-family: sans-serif;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 520px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .header .icon { font-size: 36px; margin-bottom: 0.5rem; }
+
+    .header h1 {
+      color: #e94560;
+      font-size: 22px;
+      letter-spacing: 1px;
+    }
+
+    .header p {
+      color: rgba(255,255,255,0.4);
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .input-group {
+      margin-bottom: 1rem;
+    }
+
+    label {
+      display: block;
+      color: rgba(255,255,255,0.7);
+      font-size: 13px;
+      margin-bottom: 5px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      color: white;
+      font-size: 14px;
+      outline: none;
+      transition: border 0.3s;
+    }
+
+    input:focus { border-color: #e94560; }
+    input::placeholder { color: rgba(255,255,255,0.3); }
+
+    .subject-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 10px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .remove-btn {
+      width: 34px;
+      height: 34px;
+      background: rgba(233,69,96,0.2);
+      border: 1px solid rgba(233,69,96,0.4);
+      border-radius: 8px;
+      color: #e94560;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+
+    .remove-btn:hover { background: rgba(233,69,96,0.4); }
+
+    .col-label {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 4px;
+    }
+
+    .add-btn {
+      width: 100%;
+      padding: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px dashed rgba(255,255,255,0.2);
+      border-radius: 8px;
+      color: rgba(255,255,255,0.5);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 1rem;
+    }
+
+    .add-btn:hover {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      border-color: rgba(255,255,255,0.4);
+    }
+
+    .calculate-btn {
+      width: 100%;
+      padding: 13px;
+      background: #e94560;
+      color: white;
+      font-size: 15px;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s;
+      margin-top: 0.5rem;
+    }
+
+    .calculate-btn:hover { background: #c73652; }
+
+    #result {
+      margin-top: 1.5rem;
+      background: rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 1.5rem;
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+
+    #result.show { display: block; }
+
+    #result h2 {
+      color: #e94560;
+      font-size: 18px;
+      text-align: center;
+      margin-bottom: 1.2rem;
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      font-size: 14px;
+      color: rgba(255,255,255,0.75);
+    }
+
+    .result-row:last-child { border-bottom: none; }
+    .value { color: white; font-weight: 500; }
+    .pass { color: #00b894 !important; font-weight: bold; }
+    .fail { color: #e94560 !important; font-weight: bold; }
+    .highlight { color: #f0a500 !important; font-weight: bold; }
+
+    .subject-breakdown {
+      margin-top: 1rem;
+      background: rgba(255,255,255,0.04);
+      border-radius: 10px;
+      padding: 0.8rem 1rem;
+    }
+
+    .subject-breakdown h3 {
+      color: rgba(255,255,255,0.5);
+      font-size: 12px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .subject-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      font-size: 13px;
+      color: rgba(255,255,255,0.7);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .subject-item:last-child { border-bottom: none; }
+    .subject-item.best { color: #f0a500; }
+
+    .print-btn {
+      width: 100%;
+      padding: 10px;
+      margin-top: 1rem;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      color: rgba(255,255,255,0.6);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .print-btn:hover {
+      background: rgba(255,255,255,0.05);
+      color: white;
+    }
+
+    .error {
+      color: #e94560;
+      font-size: 12px;
+      margin-top: 6px;
+      display: none;
+    }
+
+    .fields-label {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div class="icon">🎓</div>
+    <h1>Result Analysis Tool</h1>
+    <p>Enter subjects and marks to calculate result</p>
+  </div>
+
+  <!-- Student Name -->
+  <div class="input-group">
+    <label>Student Name</label>
+    <input type="text" id="studentName" placeholder="Enter student name">
+    <div class="error" id="nameError">Please enter student name</div>
+  </div>
+
+  <!-- Column Labels -->
+  <div class="fields-label">
+    <div class="col-label">Subject Name</div>
+    <div class="col-label">Marks (out of 100)</div>
+    <div></div>
+  </div>
+
+  <!-- Dynamic Subject Fields -->
+  <div id="subjectFields"></div>
+
+  <!-- Add Subject Button -->
+  <button class="add-btn" onclick="addField()">+ Add Subject</button>
+
+  <!-- Error -->
+  <div class="error" id="fieldError" style="display:none; margin-bottom:8px;">
+    Please fill at least 1 subject with valid marks (0-100)
+  </div>
+
+  <!-- Calculate Button -->
+  <button class="calculate-btn" onclick="calculateResult()">
+    Calculate Result
+  </button>
+
+  <!-- Result -->
+  <div id="result"></div>
+
+</div>
+
+<script>
+  let fieldCount = 0;
+
+  function addField() {
+    if (fieldCount >= 10) {
+      alert("Maximum 10 subjects allowed!");
+      return;
+    }
+
+    fieldCount++;
+    const id = fieldCount;
+    const div = document.createElement("div");
+    div.className = "subject-row";
+    div.id = "row-" + id;
+
+    div.innerHTML = `
+      <input type="text" id="sub-${id}" placeholder="e.g. Maths">
+      <input type="number" id="marks-${id}" placeholder="0 - 100" min="0" max="100">
+      <button class="remove-btn" onclick="removeField(${id})">×</button>
+    `;
+
+    document.getElementById("subjectFields").appendChild(div);
+  }
+
+  function removeField(id) {
+    const row = document.getElementById("row-" + id);
+    if (row) row.remove();
+  }
+
+  function calculateResult() {
+    // Validation - name
+    const name = document.getElementById("studentName").value.trim();
+    const nameError = document.getElementById("nameError");
+    if (!name) {
+      nameError.style.display = "block";
+      return;
+    }
+    nameError.style.display = "none";
+
+    // Collect filled subjects
+    let subjects = [];
+    let marks = [];
+    let valid = true;
+
+    for (let i = 1; i <= fieldCount; i++) {
+      const subEl = document.getElementById("sub-" + i);
+      const markEl = document.getElementById("marks-" + i);
+
+      if (!subEl || !markEl) continue;
+
+      const subName = subEl.value.trim();
+      const markVal = markEl.value.trim();
+
+      // Skip completely empty rows
+      if (subName === "" && markVal === "") continue;
+
+      // If one filled but not other
+      if (subName === "" || markVal === "") {
+        valid = false;
+        break;
+      }
+
+      const markNum = Number(markVal);
+      if (markNum < 0 || markNum > 100) {
+        valid = false;
+        break;
+      }
+
+      subjects.push(subName);
+      marks.push(markNum);
+    }
+
+    const fieldError = document.getElementById("fieldError");
+
+    if (!valid || subjects.length === 0) {
+      fieldError.style.display = "block";
+      return;
+    }
+    fieldError.style.display = "none";
+
+    // Calculations
+    const total = marks.reduce((a, b) => a + b, 0);
+    const maxMarks = subjects.length * 100;
+    const percentage = (total / maxMarks) * 100;
+
+    // Grade
+    let grade;
+    if (percentage >= 90) grade = "A+";
+    else if (percentage >= 80) grade = "A";
+    else if (percentage >= 70) grade = "B";
+    else if (percentage >= 60) grade = "C";
+    else if (percentage >= 50) grade = "D";
+    else grade = "F";
+
+    // Pass / Fail
+    const anyFail = marks.some(m => m < 33);
+    let statusClass, statusText;
+    if (anyFail) {
+      statusClass = "fail";
+      statusText = "FAIL ❌ (Subject mein 33 se kam marks)";
+    } else if (percentage >= 50) {
+      statusClass = "pass";
+      statusText = "PASS ✅";
+    } else {
+      statusClass = "fail";
+      statusText = "FAIL ❌";
+    }
+
+    // Highest subject
+    const highest = Math.max(...marks);
+    const highestSubjects = subjects.filter((_, i) => marks[i] === highest);
+
+    // Subject breakdown HTML
+    let breakdownHTML = subjects.map((sub, i) => {
+      const isBest = marks[i] === highest;
+      return `
+        <div class="subject-item ${isBest ? 'best' : ''}">
+          <span>${sub} ${isBest ? '⭐' : ''}</span>
+          <span>${marks[i]} / 100</span>
+        </div>
+      `;
+    }).join("");
+
+    // Show result
+    const resultDiv = document.getElementById("result");
+    resultDiv.classList.add("show");
+    resultDiv.innerHTML = `
+      <h2>Result for: ${name}</h2>
+
+      <div class="result-row">
+        <span>Total Subjects</span>
+        <span class="value">${subjects.length}</span>
+      </div>
+      <div class="result-row">
+        <span>Total Marks</span>
+        <span class="value">${total} / ${maxMarks}</span>
+      </div>
+      <div class="result-row">
+        <span>Percentage</span>
+        <span class="value">${percentage.toFixed(2)}%</span>
+      </div>
+      <div class="result-row">
+        <span>Grade</span>
+        <span class="value">${grade}</span>
+      </div>
+      <div class="result-row">
+        <span>Status</span>
+        <span class="${statusClass}">${statusText}</span>
+      </div>
+      <div class="result-row">
+        <span>Best Subject</span>
+        <span class="highlight">${highestSubjects.join(", ")} (${highest} marks)</span>
+      </div>
+
+      <div class="subject-breakdown">
+        <h3>Subject Breakdown</h3>
+        ${breakdownHTML}
+      </div>
+
+      <button class="print-btn" onclick="window.print()">🖨️ Print Result</button>
+    `;
+  }
+
+  // Add 5 fields by default
+  addField();
+  addField();
+  addField();
+  addField();
+  addField();
+</script>
+
+</body>
+</html>
